@@ -9,6 +9,8 @@ from .base import AppTestCase
 
 class TestRoot(AppTestCase):
     def test_root(self):
+        """Test the root endpoint."""
+
         rv = self.client.get("/")
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(b"Hello", rv.data)
@@ -16,6 +18,8 @@ class TestRoot(AppTestCase):
 
 class TestUser(AppTestCase):
     def test_list_all_users(self):
+        """Test the API endpoint for retrieving a list of users"""
+
         users = [User(name="Michael", email="michael@test.com"),
                  User(name="Jill Smith", email="jill@test.com"),
                  User(name="John", email="john@gmail.com")]
@@ -30,6 +34,8 @@ class TestUser(AppTestCase):
         self.assertEqual(json.loads(rv.data), expected)
 
     def test_list_user(self):
+        """Test the endpoint for retrieving a single user."""
+
         user = User(name="Jill Smith", email="jill@test.com")
 
         with get_session() as DB:

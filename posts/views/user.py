@@ -7,7 +7,16 @@ from ..models import User
 
 
 class UserView(MethodView):
+    """Logic for various endpoints related to users."""
+
     def get(self, user_id):
+        """Retrieve a single user or every user from the database, depending on
+        whether or not user_id is None. Takes one argument:
+
+        - user_id: the ID of the user to be retrived, or None for all users.
+
+        """
+
         response = None
 
         if user_id is not None:
@@ -23,6 +32,14 @@ class UserView(MethodView):
 
 
 def register(app, root, endpoint):
+    """Add roots to an app at a specified root. Takes three parameters:
+
+    - app: the app to which the routes should be added.
+    - root: the URL root to use for all routes which are added.
+    - endpoint: the name of the endpoint to be used for resolving URLs.
+
+    """
+
     user_view = UserView.as_view(endpoint)
     app.add_url_rule(root, view_func=user_view, defaults={"user_id": None},
                      methods=["GET"])
