@@ -2,7 +2,7 @@
 import json
 
 from ..db import get_session
-from ..models import User
+from ..models import Post, User
 
 from .base import AppTestCase
 
@@ -162,3 +162,26 @@ class TestUser(AppTestCase):
             x = DB.query(User).filter(User.id == user.id).first()
 
         self.assertIsNone(x)
+
+
+class TestPost(AppTestCase):
+    def test_list_posts(self):
+        """Test the API endpoint for listing posts associated with a user."""
+
+        user = User(name="John", email="john@email.com")
+
+        posts = [Post(title="Post 1", body="My first post."),
+                 Post(title="Post 2", body="A second post."),
+                 Post(title="Post 3", body="The third post I ever wrote.")]
+
+        with get_session() as DB:
+            DB.add(user)
+            for p in posts:
+                p.user = user
+                DB.add(p)
+
+        rv = self.client.get("/user/{0}/post".format(user.id))
+        self.assertEqual(rv.status_code, 200)
+
+        expected = [p.to_dict() for p in posts]
+        self.assertEqual(json.loads(rv.data), expected)

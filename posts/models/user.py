@@ -1,6 +1,7 @@
 """Define the models for users and their associated posts."""
 
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, ForeignKey, Integer, String
+from sqlalchemy.orm import relationship
 
 from .base import Base
 
@@ -19,6 +20,8 @@ class User(Base):
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
+
+    posts = relationship("Post", back_populates="user")
 
     def to_dict(self):
         """Create a dictionary representation of the User instance."""
@@ -39,3 +42,9 @@ class Post(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
     body = Column(String, nullable=False)
+    user_id = Column(Integer, ForeignKey('users.id'))
+
+    user = relationship("User", back_populates="posts")
+
+    def to_dict(self):
+        return {"id": self.id, "title": self.title, "body": self.body}

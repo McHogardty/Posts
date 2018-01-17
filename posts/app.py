@@ -36,3 +36,4 @@ def add_routes(app):
         return r
 
     views.user.register(app, "/user", "users")
+    views.post.register(app, "/user/<int:user_id>/post", "posts")

@@ -7,14 +7,11 @@ from sqlalchemy.orm.exc import NoResultFound
 from .. import db
 from ..models import User
 
+from .base import HandleErrorMixin
 
-class UserView(MethodView):
+
+class UserView(MethodView, HandleErrorMixin):
     """Logic for various endpoints related to users."""
-
-    def error(self, message, status_code):
-        r = jsonify({"error": message})
-        r.status_code = status_code
-        return r
 
     def get(self, user_id):
         """Retrieve a single user or every user from the database, depending on
@@ -125,6 +122,7 @@ def register(app, root, endpoint):
     """
 
     user_view = UserView.as_view(endpoint)
+
     app.add_url_rule(root, view_func=user_view, defaults={"user_id": None},
                      methods=["GET"])
     app.add_url_rule(root, view_func=user_view, methods=["POST"])
