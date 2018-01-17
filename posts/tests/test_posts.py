@@ -45,6 +45,12 @@ class TestUser(AppTestCase):
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(json.loads(rv.data), user.to_dict())
 
+    def test_list_user_no_user(self):
+        """Test the endpoint for retrieving a single user if no user exists."""
+
+        rv = self.client.get("/user/207")
+        self.assertEqual(rv.status_code, 404)
+
     def test_create_user(self):
         """Test the endpoint for creating a user."""
 
@@ -62,6 +68,33 @@ class TestUser(AppTestCase):
 
         self.assertEqual(data["name"], u.name)
         self.assertEqual(data["email"], u.email)
+
+    def test_create_user_no_data(self):
+        """Test the endpoint for creating a user if no data is provided."""
+
+        rv = self.client.post("/user")
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"],
+                         "No data was provided.")
+
+    def test_create_user_no_name(self):
+        """Test the endpoint for creating a user when no name is provided."""
+
+        data = {"email": "joe@bloggs.com"}
+
+        rv = self.client.post("/user", data=json.dumps(data))
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"], "No name was provided.")
+
+    def test_create_user_no_email(self):
+        """Test the endpoint for creating a user when no email is provided."""
+
+        data = {"name": "Testy testerson."}
+
+        rv = self.client.post("/user", data=json.dumps(data))
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"],
+                         "No email was provided.")
 
     def test_update_user(self):
         """Test the endpoint for updating a user."""
@@ -87,6 +120,32 @@ class TestUser(AppTestCase):
 
         self.assertEqual(new.name, user.name)
         self.assertEqual(new.email, data["email"])
+
+    def test_update_user_no_user(self):
+        """Test the endpoint for updating a user if no such user exists."""
+
+        data = {"name": "New name"}
+
+        rv = self.client.put("/user/501", data=json.dumps(data))
+        self.assertEqual(rv.status_code, 404)
+
+    def test_update_user_no_data(self):
+        """Test the endpoint for updating a user if no data is provided."""
+
+        user = User(name="Michael", email="michael@test.com")
+
+        with get_session() as DB:
+            DB.add(user)
+
+        rv = self.client.put("/user/{0}".format(user.id))
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"],
+                         "No data was provided.")
+
+        rv = self.client.put("/user/{0}".format(user.id), data="{}")
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"],
+                         "No data was provided.")
 
     def test_delete_user(self):
         """Test the endpoint for deleting a user."""

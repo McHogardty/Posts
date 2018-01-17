@@ -2,6 +2,7 @@
 from flask import request
 from flask.json import jsonify, loads
 from flask.views import MethodView
+from sqlalchemy.orm.exc import NoResultFound
 
 from .. import db
 from ..models import User
@@ -9,6 +10,11 @@ from ..models import User
 
 class UserView(MethodView):
     """Logic for various endpoints related to users."""
+
+    def error(self, message, status_code):
+        r = jsonify({"error": message})
+        r.status_code = status_code
+        return r
 
     def get(self, user_id):
         """Retrieve a single user or every user from the database, depending on
@@ -21,8 +27,12 @@ class UserView(MethodView):
         response = None
 
         if user_id is not None:
-            with db.get_session() as DB:
-                user = DB.query(User).filter(User.id == user_id).one()
+            try:
+                with db.get_session() as DB:
+                    user = DB.query(User).filter(User.id == user_id).one()
+            except NoResultFound:
+                return self.error("No user was found.", 404)
+
             response = user.to_dict()
         else:
             with db.get_session() as DB:
@@ -35,10 +45,19 @@ class UserView(MethodView):
         """Add a user to the database based on the information provided in the
         request."""
 
+        if not request.data:
+            return self.error("No data was provided.", 400)
+
         data = loads(request.data)
 
         name = data.get("name", "")
         email = data.get("email", "")
+
+        if not name:
+            return self.error("No name was provided.", 400)
+
+        if not email:
+            return self.error("No email was provided.", 400)
 
         u = User(name=name, email=email)
 
@@ -57,10 +76,16 @@ class UserView(MethodView):
 
         """
 
+        if not request.data:
+            return self.error("No data was provided.", 400)
+
         data = loads(request.data)
 
         name = data.get("name", "")
         email = data.get("email", "")
+
+        if not name and not email:
+            return self.error("No data was provided.", 400)
 
         updates = {}
         if name:
@@ -68,9 +93,12 @@ class UserView(MethodView):
         if email:
             updates[User.email] = email
 
-        with db.get_session() as DB:
-            DB.query(User).filter(User.id == user_id).update(updates)
-            user = DB.query(User).filter(User.id == user_id).one()
+        try:
+            with db.get_session() as DB:
+                DB.query(User).filter(User.id == user_id).update(updates)
+                user = DB.query(User).filter(User.id == user_id).one()
+        except NoResultFound:
+            return self.error("No user was found.", 404)
 
         return jsonify(user.to_dict())
 
