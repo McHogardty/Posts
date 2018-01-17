@@ -39,7 +39,13 @@ class TestUser(AppTestCase):
     def test_list_user_no_user(self):
         """Test the endpoint for retrieving a single user if no user exists."""
 
-        rv = self.client.get("/user/207")
+        users = [User(name="Michael", email="michael@test.com"),
+                 User(name="Jill Smith", email="jill@test.com")]
+
+        with get_session() as DB:
+            DB.add_all(users)
+
+        rv = self.client.get("/user/{0}".format(users[-1].id + 834))
         self.assertEqual(rv.status_code, 404)
 
     def test_create_user(self):
@@ -115,9 +121,16 @@ class TestUser(AppTestCase):
     def test_update_user_no_user(self):
         """Test the endpoint for updating a user if no such user exists."""
 
+        users = [User(name="Michael", email="michael@test.com"),
+                 User(name="Jill Smith", email="jill@test.com")]
+
+        with get_session() as DB:
+            DB.add_all(users)
+
         data = {"name": "New name"}
 
-        rv = self.client.put("/user/501", data=json.dumps(data))
+        rv = self.client.put("/user/{0}".format(users[-1].id + 824),
+                             data=json.dumps(data))
         self.assertEqual(rv.status_code, 404)
 
     def test_update_user_no_data(self):

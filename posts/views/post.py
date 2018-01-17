@@ -23,8 +23,8 @@ class PostView(MethodView, HandleErrorMixin):
         """
 
         with db.get_session() as DB:
-            result = DB.query(User).filter(exists().where(User.id == user_id))
-            if not result.scalar():
+            user = DB.query(User).filter(User.id == user_id)
+            if not DB.query(user.exists()).scalar():
                 return self.error("No such user found.", 404)
 
             if post_id is not None:
@@ -65,8 +65,8 @@ class PostView(MethodView, HandleErrorMixin):
         post = Post(title=title, body=body, user_id=user_id)
 
         with db.get_session() as DB:
-            result = DB.query(User).filter(exists().where(User.id == user_id))
-            if not result.scalar():
+            user = DB.query(User).filter(User.id == user_id)
+            if not DB.query(user.exists()).scalar():
                 return self.error("No such user found.", 404)
 
             DB.add(post)
