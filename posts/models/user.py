@@ -20,6 +20,11 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
 
+    def to_dict(self):
+        """Create a dictionary representation of the User instance."""
+
+        return {"id": self.id, "name": self.name, "email": self.email}
+
 
 class Post(Base):
     """Represent a post. Posts have the following properties:
