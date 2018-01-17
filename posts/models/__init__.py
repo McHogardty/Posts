@@ -2,5 +2,4 @@
 
 from .user import Post, User
 
-
 __all__ = ("Post", "User")
