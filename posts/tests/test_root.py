@@ -1,4 +1,6 @@
 
+import json
+
 from .base import AppTestCase
 
 
@@ -8,4 +10,6 @@ class TestRoot(AppTestCase):
 
         rv = self.client.get("/")
         self.assertEqual(rv.status_code, 200)
-        self.assertEqual(b"Hello", rv.data)
+        with self.app.app_context():
+            self.assertEqual(json.loads(rv.data)["links"],
+                             {"user": "/user"})

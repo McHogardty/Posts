@@ -3,7 +3,6 @@ from flask import request
 from flask.json import jsonify, loads
 from flask.views import MethodView
 from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.sql import exists
 
 from .. import db
 from ..models import Post, User

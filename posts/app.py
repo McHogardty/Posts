@@ -1,5 +1,5 @@
 
-from flask import Flask
+from flask import Flask, url_for
 from flask.json import jsonify
 
 from . import db, views
@@ -20,7 +20,7 @@ def init_db(app):
 def add_routes(app):
     @app.route("/")
     def root():
-        return "Hello"
+        return jsonify({"links": {"user": url_for("users")}})
 
     # Remove the default HTML.
     @app.errorhandler(404)
