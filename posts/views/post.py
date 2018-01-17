@@ -101,9 +101,8 @@ class PostView(MethodView, HandleErrorMixin):
             updates[Post.body] = body
 
         with db.get_session() as DB:
-            result = DB.query(User).filter(exists()
-                                           .where(User.id == user_id))
-            if not result.scalar():
+            user = DB.query(User).filter(User.id == user_id)
+            if not DB.query(user.exists()).scalar():
                 return self.error("No such user found.", 404)
 
             try:
