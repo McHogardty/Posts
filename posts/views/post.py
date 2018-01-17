@@ -124,7 +124,7 @@ class PostView(MethodView, HandleErrorMixin):
         with db.get_session() as DB:
             DB.query(Post).filter(Post.id == post_id).delete()
 
-        return ""
+        return "", 204  # No content.
 
 
 def register(app, root, endpoint):

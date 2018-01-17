@@ -20,7 +20,7 @@ def init_db(app):
 def add_routes(app):
     @app.route("/")
     def root():
-        return jsonify({"links": {"user": url_for("users")}})
+        return jsonify({"links": {"user": url_for("users.list")}})
 
     # Remove the default HTML.
     @app.errorhandler(404)

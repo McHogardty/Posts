@@ -289,4 +289,4 @@ class TestPost(AppTestCase):
             DB.add(post)
 
         rv = self.client.delete("/user/{0}/post/{1}".format(user.id, post.id))
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 204)

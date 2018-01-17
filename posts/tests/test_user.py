@@ -160,7 +160,7 @@ class TestUser(AppTestCase):
             DB.add(user)
 
         rv = self.client.delete("/user/{0}".format(user.id))
-        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(rv.status_code, 204)
 
         with get_session() as DB:
             x = DB.query(User).filter(User.id == user.id).first()

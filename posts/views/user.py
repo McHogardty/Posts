@@ -31,6 +31,7 @@ class UserView(MethodView, HandleErrorMixin):
                 return self.error("No user was found.", 404)
 
             response = user.to_dict()
+            # response["links"] = self.get_actions(user)
         else:
             with db.get_session() as DB:
                 users = DB.query(User).all()
@@ -109,7 +110,7 @@ class UserView(MethodView, HandleErrorMixin):
         with db.get_session() as DB:
             DB.query(User).filter(User.id == user_id).delete()
 
-        return ""
+        return "", 204  # No content
 
 
 def register(app, root, endpoint):
@@ -124,7 +125,13 @@ def register(app, root, endpoint):
     user_view = UserView.as_view(endpoint)
 
     app.add_url_rule(root, view_func=user_view, defaults={"user_id": None},
-                     methods=["GET"])
-    app.add_url_rule(root, view_func=user_view, methods=["POST"])
+                     methods=["GET"], endpoint="{0}.list".format(endpoint))
+    app.add_url_rule(root, view_func=user_view, methods=["POST"],
+                     endpoint="{0}.create".format(endpoint))
     app.add_url_rule("{0}/<int:user_id>".format(root), view_func=user_view,
-                     methods=["GET", "PUT", "DELETE"])
+                     methods=["GET"], endpoint="{0}.view".format(endpoint))
+    app.add_url_rule("{0}/<int:user_id>".format(root), view_func=user_view,
+                     methods=["PUT"], endpoint="{0}.update".format(endpoint))
+    app.add_url_rule("{0}/<int:user_id>".format(root), view_func=user_view,
+                     methods=["DELETE"],
+                     endpoint="{0}.delete".format(endpoint))
