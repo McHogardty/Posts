@@ -23,11 +23,6 @@ class User(Base):
 
     posts = relationship("Post", back_populates="user")
 
-    def to_dict(self):
-        """Create a dictionary representation of the User instance."""
-
-        return {"id": self.id, "name": self.name, "email": self.email}
-
 
 class Post(Base):
     """Represent a post. Posts have the following properties:
@@ -45,6 +40,3 @@ class Post(Base):
     user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
 
     user = relationship("User", back_populates="posts")
-
-    def to_dict(self):
-        return {"id": self.id, "title": self.title, "body": self.body}
