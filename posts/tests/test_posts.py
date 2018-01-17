@@ -28,3 +28,13 @@ class TestUser(AppTestCase):
 
         expected = [u.to_dict() for u in users]
         self.assertEqual(json.loads(rv.data), expected)
+
+    def test_list_user(self):
+        user = User(name="Jill Smith", email="jill@test.com")
+
+        with get_session() as DB:
+            DB.add(user)
+
+        rv = self.client.get("/user/{0}".format(user.id))
+        self.assertEqual(rv.status_code, 200)
+        self.assertEqual(json.loads(rv.data), user.to_dict())
