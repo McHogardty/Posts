@@ -1,5 +1,6 @@
 
-from flask.json import jsonify
+from flask import request
+from flask.json import jsonify, loads
 from flask.views import MethodView
 
 from .. import db
@@ -30,6 +31,24 @@ class UserView(MethodView):
 
         return jsonify(response)
 
+    def post(self):
+        """Add a user to the database based on the information provided in the
+        request."""
+
+        data = loads(request.data)
+
+        name = data.get("name", "")
+        email = data.get("email", "")
+
+        u = User(name=name, email=email)
+
+        with db.get_session() as DB:
+            DB.add(u)
+
+        r = jsonify(u.to_dict())
+        r.status_code = 201
+        return r
+
 
 def register(app, root, endpoint):
     """Add roots to an app at a specified root. Takes three parameters:
@@ -43,5 +62,6 @@ def register(app, root, endpoint):
     user_view = UserView.as_view(endpoint)
     app.add_url_rule(root, view_func=user_view, defaults={"user_id": None},
                      methods=["GET"])
+    app.add_url_rule(root, view_func=user_view, methods=["POST"])
     app.add_url_rule("{0}/<int:user_id>".format(root), view_func=user_view,
                      methods=["GET"])

@@ -44,3 +44,21 @@ class TestUser(AppTestCase):
         rv = self.client.get("/user/{0}".format(user.id))
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(json.loads(rv.data), user.to_dict())
+
+    def test_create_user(self):
+        """Test the endpoint for creating a user."""
+
+        data = {"name": "Michael", "email": "michael@gmail.com"}
+
+        rv = self.app.test_client().post("/user", data=json.dumps(data))
+        self.assertEqual(rv.status_code, 201)
+
+        returned = json.loads(rv.data)
+        self.assertEqual(data["name"], returned["name"])
+        self.assertEqual(data["email"], returned["email"])
+
+        with get_session() as DB:
+            u = DB.query(User).filter(User.id == returned["id"]).one()
+
+        self.assertEqual(data["name"], u.name)
+        self.assertEqual(data["email"], u.email)
