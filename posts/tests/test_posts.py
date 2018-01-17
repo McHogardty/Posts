@@ -50,7 +50,7 @@ class TestUser(AppTestCase):
 
         data = {"name": "Michael", "email": "michael@gmail.com"}
 
-        rv = self.app.test_client().post("/user", data=json.dumps(data))
+        rv = self.client.post("/user", data=json.dumps(data))
         self.assertEqual(rv.status_code, 201)
 
         returned = json.loads(rv.data)
@@ -62,3 +62,44 @@ class TestUser(AppTestCase):
 
         self.assertEqual(data["name"], u.name)
         self.assertEqual(data["email"], u.email)
+
+    def test_update_user(self):
+        """Test the endpoint for updating a user."""
+
+        user = User(name="John", email="incorrect@wrong.com")
+
+        with get_session() as DB:
+            DB.add(user)
+
+        data = {"email": "correct@email.com"}
+
+        rv = self.client.put("/user/{0}".format(user.id),
+                             data=json.dumps(data))
+        self.assertEqual(rv.status_code, 200)
+
+        returned = json.loads(rv.data)
+        self.assertEqual(returned["id"], user.id)
+        self.assertEqual(returned["name"], user.name)
+        self.assertEqual(returned["email"], data["email"])
+
+        with get_session() as DB:
+            new = DB.query(User).filter(User.id == user.id).one()
+
+        self.assertEqual(new.name, user.name)
+        self.assertEqual(new.email, data["email"])
+
+    def test_delete_user(self):
+        """Test the endpoint for deleting a user."""
+
+        user = User(name="Jill", email="jill@mail.com")
+
+        with get_session() as DB:
+            DB.add(user)
+
+        rv = self.client.delete("/user/{0}".format(user.id))
+        self.assertEqual(rv.status_code, 200)
+
+        with get_session() as DB:
+            x = DB.query(User).filter(User.id == user.id).first()
+
+        self.assertIsNone(x)

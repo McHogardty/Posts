@@ -49,6 +49,43 @@ class UserView(MethodView):
         r.status_code = 201
         return r
 
+    def put(self, user_id):
+        """Update a user in the database based on the data in the request.
+        Takes one argument:
+
+        - user_id: the ID of the user to be updated.
+
+        """
+
+        data = loads(request.data)
+
+        name = data.get("name", "")
+        email = data.get("email", "")
+
+        updates = {}
+        if name:
+            updates[User.name] = name
+        if email:
+            updates[User.email] = email
+
+        with db.get_session() as DB:
+            DB.query(User).filter(User.id == user_id).update(updates)
+            user = DB.query(User).filter(User.id == user_id).one()
+
+        return jsonify(user.to_dict())
+
+    def delete(self, user_id):
+        """Removes a user in the database. Takes one argument:
+
+        - user_id: the ID of the user to be deleted.
+
+        """
+
+        with db.get_session() as DB:
+            DB.query(User).filter(User.id == user_id).delete()
+
+        return ""
+
 
 def register(app, root, endpoint):
     """Add roots to an app at a specified root. Takes three parameters:
@@ -64,4 +101,4 @@ def register(app, root, endpoint):
                      methods=["GET"])
     app.add_url_rule(root, view_func=user_view, methods=["POST"])
     app.add_url_rule("{0}/<int:user_id>".format(root), view_func=user_view,
-                     methods=["GET"])
+                     methods=["GET", "PUT", "DELETE"])
