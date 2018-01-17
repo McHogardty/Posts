@@ -18,6 +18,7 @@ class User(Base):
 
     id = Column(Integer, primary_key=True)
     email = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
 
 
 class Post(Base):
