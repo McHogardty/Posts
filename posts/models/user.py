@@ -21,7 +21,8 @@ class User(Base):
     email = Column(String, nullable=False, unique=True)
     name = Column(String, nullable=False)
 
-    posts = relationship("Post", back_populates="user")
+    posts = relationship("Post", backref="user",
+                         cascade="all, delete")
 
 
 class Post(Base):
@@ -37,6 +38,5 @@ class Post(Base):
     id = Column(Integer, primary_key=True)
     title = Column(String, nullable=False)
     body = Column(String, nullable=False)
-    user_id = Column(Integer, ForeignKey('users.id'), nullable=False)
-
-    user = relationship("User", back_populates="posts")
+    user_id = Column(Integer, ForeignKey(User.id, ondelete="CASCADE"),
+                     nullable=False)

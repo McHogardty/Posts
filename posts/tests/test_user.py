@@ -2,7 +2,7 @@
 import json
 
 from ..db import get_session
-from ..models import User
+from ..models import Post, User
 
 from .base import AppTestCase
 
@@ -93,6 +93,19 @@ class TestUser(AppTestCase):
         self.assertEqual(json.loads(rv.data)["error"],
                          "No email was provided.")
 
+    def test_create_user_bad_email(self):
+        """Test the endpoint for creating a user where an invalid email is
+        provided.
+
+        """
+
+        data = {"name": "John Smith", "email": "notanemail"}
+
+        rv = self.client.post("/api/user", data=json.dumps(data))
+        self.assertEqual(rv.status_code, 400)
+        self.assertEqual(json.loads(rv.data)["error"],
+                         "An invalid email was provided.")
+
     def test_update_user(self):
         """Test the endpoint for updating a user."""
 
@@ -156,13 +169,19 @@ class TestUser(AppTestCase):
 
         user = User(name="Jill", email="jill@mail.com")
 
+        posts = [Post(title="First", body="The first post.", user=user),
+                 Post(title="Second", body="The second post.", user=user)]
+
         with get_session() as DB:
             DB.add(user)
+            DB.add_all(posts)
 
         rv = self.client.delete("/api/user/{0}".format(user.id))
         self.assertEqual(rv.status_code, 204)
 
         with get_session() as DB:
             x = DB.query(User).filter(User.id == user.id).first()
+            y = DB.query(Post).filter(Post.user == user).all()
 
         self.assertIsNone(x)
+        self.assertFalse(y)

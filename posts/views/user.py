@@ -1,4 +1,6 @@
 
+import re
+
 from flask import request
 from flask.json import jsonify, loads
 from flask.views import MethodView
@@ -56,6 +58,11 @@ class UserView(MethodView, HandleErrorMixin):
 
         if not email:
             return self.error("No email was provided.", 400)
+
+        # Very basic sanity check for a valid email.
+        # (something without @)@(something without @).(something without @)
+        if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+            return self.error("An invalid email was provided.", 400)
 
         u = User(name=name, email=email)
 
