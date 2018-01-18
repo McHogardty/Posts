@@ -12,6 +12,7 @@ def create_app():
 
     app = Flask("posts")
     app.config.from_object(Config)
+    init_db(app)
     add_routes(app)
     return app
 
@@ -48,3 +49,6 @@ def add_routes(app):
 
     views.user.register(app, "/api/user", "users")
     views.post.register(app, "/api/user/<int:user_id>/post", "posts")
+
+
+app = create_app()
