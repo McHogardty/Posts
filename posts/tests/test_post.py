@@ -24,7 +24,7 @@ class TestPost(AppTestCase):
             DB.add(user2)
             DB.add_all(posts)
 
-        rv = self.client.get("/user/{0}/post".format(user1.id))
+        rv = self.client.get("/api/user/{0}/post".format(user1.id))
         self.assertEqual(rv.status_code, 200)
 
         expected = [p.to_dict() for p in posts[:2]]
@@ -42,7 +42,7 @@ class TestPost(AppTestCase):
         with get_session() as DB:
             DB.add_all(users)
 
-        rv = self.client.get("/user/{0}/post".format(users[-1].id + 312))
+        rv = self.client.get("/api/user/{0}/post".format(users[-1].id + 312))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such user found.")
 
@@ -57,7 +57,7 @@ class TestPost(AppTestCase):
             DB.add(user)
             DB.add(post)
 
-        rv = self.client.get("/user/{0}/post/{1}".format(user.id, post.id))
+        rv = self.client.get("/api/user/{0}/post/{1}".format(user.id, post.id))
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(json.loads(rv.data), post.to_dict())
 
@@ -73,7 +73,7 @@ class TestPost(AppTestCase):
         with get_session() as DB:
             DB.add_all(users)
 
-        rv = self.client.get("/user/{0}/post/1".format(users[-1].id + 723))
+        rv = self.client.get("/api/user/{0}/post/1".format(users[-1].id + 723))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such user found.")
 
@@ -92,8 +92,8 @@ class TestPost(AppTestCase):
             DB.add(user)
             DB.add_all(posts)
 
-        rv = self.client.get("/user/{0}/post/{1}".format(user.id,
-                                                         posts[-1].id + 325))
+        rv = self.client.get("/api/user/{0}/post/{1}"
+                             .format(user.id, posts[-1].id + 325))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such post found.")
 
@@ -107,7 +107,7 @@ class TestPost(AppTestCase):
 
         data = {"title": "A post title", "body": "Something important."}
 
-        rv = self.client.post("/user/{0}/post".format(user.id),
+        rv = self.client.post("/api/user/{0}/post".format(user.id),
                               data=json.dumps(data))
         self.assertEqual(rv.status_code, 201)
 
@@ -136,7 +136,7 @@ class TestPost(AppTestCase):
 
         data = {"title": "A post title", "body": "Something important."}
 
-        rv = self.client.post("/user/{0}/post".format(users[-1].id + 500),
+        rv = self.client.post("/api/user/{0}/post".format(users[-1].id + 500),
                               data=json.dumps(data))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such user found.")
@@ -149,7 +149,7 @@ class TestPost(AppTestCase):
         with get_session() as DB:
             DB.add(user)
 
-        rv = self.client.post("/user/{0}/post".format(user.id))
+        rv = self.client.post("/api/user/{0}/post".format(user.id))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"], "No data was provided.")
 
@@ -163,7 +163,7 @@ class TestPost(AppTestCase):
 
         data = {"body": "A prolific post body."}
 
-        rv = self.client.post("/user/{0}/post".format(user.id),
+        rv = self.client.post("/api/user/{0}/post".format(user.id),
                               data=json.dumps(data))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
@@ -179,7 +179,7 @@ class TestPost(AppTestCase):
 
         data = {"title": "Title"}
 
-        rv = self.client.post("/user/{0}/post".format(user.id),
+        rv = self.client.post("/api/user/{0}/post".format(user.id),
                               data=json.dumps(data))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
@@ -199,7 +199,7 @@ class TestPost(AppTestCase):
 
         data = {"title": "Right title"}
 
-        rv = self.client.put("/user/{0}/post/{1}".format(user.id, post.id),
+        rv = self.client.put("/api/user/{0}/post/{1}".format(user.id, post.id),
                              data=json.dumps(data))
         self.assertEqual(rv.status_code, 200)
 
@@ -228,7 +228,8 @@ class TestPost(AppTestCase):
 
         data = {"body": "A new body."}
 
-        rv = self.client.put("/user/{0}/post/142".format(users[-1].id + 921),
+        rv = self.client.put("/api/user/{0}/post/142"
+                             .format(users[-1].id + 921),
                              data=json.dumps(data))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such user found.")
@@ -250,8 +251,8 @@ class TestPost(AppTestCase):
 
         data = {"body": "A new post body."}
 
-        rv = self.client.put("/user/{0}/post/{1}".format(user.id,
-                                                         posts[-1].id + 637),
+        rv = self.client.put("/api/user/{0}/post/{1}"
+                             .format(user.id, posts[-1].id + 637),
                              data=json.dumps(data))
         self.assertEqual(rv.status_code, 404)
         self.assertEqual(json.loads(rv.data)["error"], "No such post found.")
@@ -267,11 +268,11 @@ class TestPost(AppTestCase):
             DB.add(user)
             DB.add(post)
 
-        rv = self.client.put("/user/{0}/post/{1}".format(user.id, post.id))
+        rv = self.client.put("/api/user/{0}/post/{1}".format(user.id, post.id))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"], "No data was provided.")
 
-        rv = self.client.put("/user/{0}/post/{1}".format(user.id, post.id),
+        rv = self.client.put("/api/user/{0}/post/{1}".format(user.id, post.id),
                              data="{}")
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"], "No data was provided.")
@@ -288,5 +289,6 @@ class TestPost(AppTestCase):
             DB.add(user)
             DB.add(post)
 
-        rv = self.client.delete("/user/{0}/post/{1}".format(user.id, post.id))
+        rv = self.client.delete("/api/user/{0}/post/{1}"
+                                .format(user.id, post.id))
         self.assertEqual(rv.status_code, 204)

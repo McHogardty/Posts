@@ -18,7 +18,7 @@ class TestUser(AppTestCase):
         with get_session() as DB:
             DB.add_all(users)
 
-        rv = self.client.get("/user")
+        rv = self.client.get("/api/user")
         self.assertEqual(rv.status_code, 200)
 
         expected = [u.to_dict() for u in users]
@@ -32,7 +32,7 @@ class TestUser(AppTestCase):
         with get_session() as DB:
             DB.add(user)
 
-        rv = self.client.get("/user/{0}".format(user.id))
+        rv = self.client.get("/api/user/{0}".format(user.id))
         self.assertEqual(rv.status_code, 200)
         self.assertEqual(json.loads(rv.data), user.to_dict())
 
@@ -45,7 +45,7 @@ class TestUser(AppTestCase):
         with get_session() as DB:
             DB.add_all(users)
 
-        rv = self.client.get("/user/{0}".format(users[-1].id + 834))
+        rv = self.client.get("/api/user/{0}".format(users[-1].id + 834))
         self.assertEqual(rv.status_code, 404)
 
     def test_create_user(self):
@@ -53,7 +53,7 @@ class TestUser(AppTestCase):
 
         data = {"name": "Michael", "email": "michael@gmail.com"}
 
-        rv = self.client.post("/user", data=json.dumps(data))
+        rv = self.client.post("/api/user", data=json.dumps(data))
         self.assertEqual(rv.status_code, 201)
 
         returned = json.loads(rv.data)
@@ -69,7 +69,7 @@ class TestUser(AppTestCase):
     def test_create_user_no_data(self):
         """Test the endpoint for creating a user if no data is provided."""
 
-        rv = self.client.post("/user")
+        rv = self.client.post("/api/user")
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
                          "No data was provided.")
@@ -79,7 +79,7 @@ class TestUser(AppTestCase):
 
         data = {"email": "joe@bloggs.com"}
 
-        rv = self.client.post("/user", data=json.dumps(data))
+        rv = self.client.post("/api/user", data=json.dumps(data))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"], "No name was provided.")
 
@@ -88,7 +88,7 @@ class TestUser(AppTestCase):
 
         data = {"name": "Testy testerson."}
 
-        rv = self.client.post("/user", data=json.dumps(data))
+        rv = self.client.post("/api/user", data=json.dumps(data))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
                          "No email was provided.")
@@ -103,7 +103,7 @@ class TestUser(AppTestCase):
 
         data = {"email": "correct@email.com"}
 
-        rv = self.client.put("/user/{0}".format(user.id),
+        rv = self.client.put("/api/user/{0}".format(user.id),
                              data=json.dumps(data))
         self.assertEqual(rv.status_code, 200)
 
@@ -129,7 +129,7 @@ class TestUser(AppTestCase):
 
         data = {"name": "New name"}
 
-        rv = self.client.put("/user/{0}".format(users[-1].id + 824),
+        rv = self.client.put("/api/user/{0}".format(users[-1].id + 824),
                              data=json.dumps(data))
         self.assertEqual(rv.status_code, 404)
 
@@ -141,12 +141,12 @@ class TestUser(AppTestCase):
         with get_session() as DB:
             DB.add(user)
 
-        rv = self.client.put("/user/{0}".format(user.id))
+        rv = self.client.put("/api/user/{0}".format(user.id))
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
                          "No data was provided.")
 
-        rv = self.client.put("/user/{0}".format(user.id), data="{}")
+        rv = self.client.put("/api/user/{0}".format(user.id), data="{}")
         self.assertEqual(rv.status_code, 400)
         self.assertEqual(json.loads(rv.data)["error"],
                          "No data was provided.")
@@ -159,7 +159,7 @@ class TestUser(AppTestCase):
         with get_session() as DB:
             DB.add(user)
 
-        rv = self.client.delete("/user/{0}".format(user.id))
+        rv = self.client.delete("/api/user/{0}".format(user.id))
         self.assertEqual(rv.status_code, 204)
 
         with get_session() as DB:
