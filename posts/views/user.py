@@ -28,15 +28,14 @@ class UserView(MethodView, HandleErrorMixin):
         if user_id is not None:
             try:
                 with db.get_session() as DB:
-                    user = DB.query(User).filter(User.id == user_id).one()
+                    user = User.get(DB, user_id)
             except NoResultFound:
                 return self.error("No user was found.", 404)
 
             response = user.to_dict()
-            # response["links"] = self.get_actions(user)
         else:
             with db.get_session() as DB:
-                users = DB.query(User).all()
+                users = User.all(DB)
             response = [u.to_dict() for u in users]
 
         return jsonify(response)
@@ -64,10 +63,8 @@ class UserView(MethodView, HandleErrorMixin):
         if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
             return self.error("An invalid email was provided.", 400)
 
-        u = User(name=name, email=email)
-
         with db.get_session() as DB:
-            DB.add(u)
+            u = User.create(DB, name=name, email=email)
 
         r = jsonify(u.to_dict())
         r.status_code = 201
@@ -94,14 +91,13 @@ class UserView(MethodView, HandleErrorMixin):
 
         updates = {}
         if name:
-            updates[User.name] = name
+            updates["name"] = name
         if email:
-            updates[User.email] = email
+            updates["email"] = email
 
         try:
             with db.get_session() as DB:
-                DB.query(User).filter(User.id == user_id).update(updates)
-                user = DB.query(User).filter(User.id == user_id).one()
+                user = User.update(DB, user_id, **updates)
         except NoResultFound:
             return self.error("No user was found.", 404)
 
@@ -115,7 +111,7 @@ class UserView(MethodView, HandleErrorMixin):
         """
 
         with db.get_session() as DB:
-            DB.query(User).filter(User.id == user_id).delete()
+            User.delete(DB, user_id)
 
         return "", 204  # No content
 

@@ -22,20 +22,18 @@ class PostView(MethodView, HandleErrorMixin):
         """
 
         with db.get_session() as DB:
-            user = DB.query(User).filter(User.id == user_id)
-            if not DB.query(user.exists()).scalar():
+            if not User.exists(DB, user_id):
                 return self.error("No such user found.", 404)
 
             if post_id is not None:
                 try:
-                    post = DB.query(Post).filter(Post.user_id == user_id,
-                                                 Post.id == post_id).one()
+                    post = Post.get(DB, post_id)
                 except NoResultFound:
                     return self.error("No such post found.", 404)
 
                 response = post.to_dict()
             else:
-                posts = DB.query(Post).filter(Post.user_id == user_id).all()
+                posts = User.get(DB, user_id).posts
 
                 response = [p.to_dict() for p in posts]
 
@@ -61,14 +59,11 @@ class PostView(MethodView, HandleErrorMixin):
         if not body:
             return self.error("No post body was provided.", 400)
 
-        post = Post(title=title, body=body, user_id=user_id)
-
         with db.get_session() as DB:
-            user = DB.query(User).filter(User.id == user_id)
-            if not DB.query(user.exists()).scalar():
+            if not User.exists(DB, user_id):
                 return self.error("No such user found.", 404)
 
-            DB.add(post)
+            post = Post.create(DB, title=title, body=body, user_id=user_id)
 
         r = jsonify(post.to_dict())
         r.status_code = 201
@@ -95,19 +90,16 @@ class PostView(MethodView, HandleErrorMixin):
 
         updates = {}
         if title:
-            updates[Post.title] = title
+            updates["title"] = title
         if body:
-            updates[Post.body] = body
+            updates["body"] = body
 
         with db.get_session() as DB:
-            user = DB.query(User).filter(User.id == user_id)
-            if not DB.query(user.exists()).scalar():
+            if not User.exists(DB, user_id):
                 return self.error("No such user found.", 404)
 
             try:
-                DB.query(Post).filter(Post.user_id == user_id,
-                                      Post.id == post_id).update(updates)
-                post = DB.query(Post).filter(Post.id == post_id).one()
+                post = Post.update_for_user(DB, post_id, user_id, **updates)
             except NoResultFound:
                 return self.error("No such post found.", 404)
 
@@ -122,7 +114,7 @@ class PostView(MethodView, HandleErrorMixin):
         """
 
         with db.get_session() as DB:
-            DB.query(Post).filter(Post.id == post_id).delete()
+            Post.delete(DB, post_id)
 
         return "", 204  # No content.
 

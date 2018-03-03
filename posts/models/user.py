@@ -40,3 +40,12 @@ class Post(Base):
     body = Column(String, nullable=False)
     user_id = Column(Integer, ForeignKey(User.id, ondelete="CASCADE"),
                      nullable=False)
+
+    @classmethod
+    def update_for_user(cls, DB, post_id, user_id, **kwargs):
+        updates = cls.prepare_updates(**kwargs)
+
+        DB.query(cls).filter(cls.user_id == user_id,
+                             cls.id == post_id).update(updates)
+
+        return cls.get(DB, post_id)
